@@ -51,8 +51,9 @@ ENABLE_ACTION_LOGGING = "true"
 # 数据库绑定
 [[d1_databases]]
 binding = "DB"
-database_name = "codeseek"
+database_name = "alts-db"
 database_id = "42216a7e-3dbb-4feb-9974-2a8ee32af550"
+remote = true
 
 # 监控
 [observability]
