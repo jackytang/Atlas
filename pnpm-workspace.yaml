@@ -1,0 +1,13 @@
+packages:
+  - packages/*
+  - backend
+  - frontend
+
+# Keep npm-compatible dependency ranges while linking local workspace packages.
+linkWorkspacePackages: true
+
+# Explicitly approve native-binary setup scripts for build tools.
+allowBuilds:
+  esbuild: true
+  sharp: true
+  workerd: true
