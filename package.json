@@ -1,6 +1,12 @@
 {
   "name": "atlas",
   "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter atlas-frontend --filter atlas-backend run dev",
+    "dev:frontend": "pnpm --dir frontend run dev",
+    "dev:backend": "pnpm --dir backend run dev",
+    "build": "pnpm --filter atlas-backend --filter atlas-frontend run build"
+  },
   "workspaces": [
     "packages/*",
     "backend",

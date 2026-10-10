@@ -182,8 +182,12 @@ wrangler secret put TMDB_API_KEY          # v4.0 新增
 ### 4.1 启动开发服务器
 
 ```bash
-# 启动全部服务（前端 :5173 + 后端 :8787 + D1 本地模拟）
+# 在项目根目录启动全部服务（前端 :3000 + 后端 :8787 + D1 本地模拟）
 pnpm dev
+
+# 也可以分别启动
+pnpm dev:frontend
+pnpm dev:backend
 ```
 
 ### 4.2 验证 v4.0 新功能
