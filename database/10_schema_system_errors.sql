@@ -6,8 +6,8 @@
 -- 执行顺序: 10
 --
 -- 注意：
---   - 全新部署：01_schema_core.sql 已包含 google_id 字段，无需执行本文件第 2 部分
---   - 已部署升级：执行本文件即可，ALTER TABLE 会在列已存在时报错，可忽略
+--   - 全新部署：01_schema_core.sql 已包含 Google OAuth 字段及索引，第 2 部分默认注释
+--   - 已部署升级：确认字段尚不存在后，仅取消对应 ALTER TABLE 语句及索引语句的注释
 -- ===============================================
 
 -- ===============================================
@@ -43,9 +43,9 @@ CREATE INDEX IF NOT EXISTS idx_system_errors_user_id ON system_errors(user_id);
 
 -- ===============================================
 -- 2. users 表新增 Google OAuth 字段（已部署环境升级用）
--- 全新部署已在 01_schema_core.sql 包含，以下语句在列已存在时会报错，可忽略
+-- 全新部署已在 01_schema_core.sql 包含，默认注释以避免重复添加字段
 -- ===============================================
 
-ALTER TABLE users ADD COLUMN google_id TEXT;
-ALTER TABLE users ADD COLUMN google_username TEXT;
-CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL;
+-- ALTER TABLE users ADD COLUMN google_id TEXT;
+-- ALTER TABLE users ADD COLUMN google_username TEXT;
+-- CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL;

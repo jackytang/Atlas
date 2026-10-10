@@ -68,57 +68,66 @@ atlas/
 
 ### 2.1 创建数据库
 
+先通过设备授权登录 Cloudflare，避免浏览器跳转到 `localhost:8976` 时无法连接。按照终端提示在浏览器中完成授权，等待登录成功后再创建数据库。
+
 ```bash
+# ① 设备授权登录
+npx wrangler login --device
+
+# ② 登录成功后创建数据库
 npx wrangler d1 create atlas-db
 ```
+
+> 如果提示不支持 `--device`，请先升级 Wrangler 到支持设备授权的版本。
 
 记下输出的 `database_id`，后续配置使用。
 
 ### 2.2 执行建表（按顺序）
 
-**重要：必须按以下顺序执行，存在外键依赖关系。**
+**重要：必须按以下顺序执行，存在外键依赖关系。所有命令均使用 `--remote`，以执行到 Cloudflare 上的远程 D1 数据库，而非本地数据库。**
 
 ```bash
 # 替换 <DATABASE_ID> 为上一步获取的 ID
 D1_ID="<DATABASE_ID>"
 
 # ① 核心 schema（用户、收藏、历史等基础表）
-npx wrangler d1 execute $D1_ID --file=database/01_schema_core.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/01_schema_core.sql
 
 # ② 搜索 schema（搜索源、社区、安全、反馈公告、系统错误等）
-npx wrangler d1 execute $D1_ID --file=database/02_schema_search.sql
-npx wrangler d1 execute $D1_ID --file=database/03_schema_community.sql
-npx wrangler d1 execute $D1_ID --file=database/04_schema_security.sql
-npx wrangler d1 execute $D1_ID --file=database/05_schema_feedback_announcements.sql
-npx wrangler d1 execute $D1_ID --file=database/10_schema_system_errors.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/02_schema_search.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/03_schema_community.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/04_schema_security.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/05_schema_feedback_announcements.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/10_schema_system_errors.sql
 
 # ③ 数据存储 schema（v4.3 新增，搜索结果异步落库去重）
-npx wrangler d1 execute $D1_ID --file=database/11_schema_data_storage.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/11_schema_data_storage.sql
 
 # ④ 索引与触发器
-npx wrangler d1 execute $D1_ID --file=database/09_indexes_triggers.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/09_indexes_triggers.sql
 
 # ⑤ 种子数据（系统配置、搜索源、标签）
-npx wrangler d1 execute $D1_ID --file=database/06_data_system.sql
-npx wrangler d1 execute $D1_ID --file=database/07_data_search_sources.sql
-npx wrangler d1 execute $D1_ID --file=database/08_data_tags.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/06_data_system.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/07_data_search_sources.sql
+npx wrangler d1 execute $D1_ID --remote --file=database/08_data_tags.sql
 ```
 
 ### 2.3 验证数据库
 
 ```bash
 # 查看表结构
-npx wrangler d1 execute $D1_ID --command="SELECT name FROM sqlite_master WHERE type='table';"
+npx wrangler d1 execute $D1_ID --remote --command="SELECT name FROM sqlite_master WHERE type='table';"
 
 # 预期输出应包含:
 # users, favorites, history, comments, ratings, reports,
 # feedback, search_sources, admin_logs, data_records, data_record_sources (等)
 
-# 验证搜索源数据（应有 50+ 条，覆盖 jav/anime/movie/manga/novel 5 个 category）
-npx wrangler d1 execute $D1_ID --command="SELECT category, COUNT(*) as cnt FROM search_sources GROUP BY category;"
+# 验证搜索源数据（按分类表关联的大类统计，覆盖以下 5 个大类）
+# 预期大类：jav_sources / anime_sources / movie_sources / manga_sources / novel_sources
+npx wrangler d1 execute $D1_ID --remote --command="SELECT c.major_category_id AS category, COUNT(*) AS cnt FROM search_sources AS s JOIN search_source_categories AS c ON c.id = s.category_id GROUP BY c.major_category_id;"
 
 # 验证数据存储表（v4.3 新增）
-npx wrangler d1 execute $D1_ID --command="SELECT COUNT(*) as cnt FROM data_records;"
+npx wrangler d1 execute $D1_ID --remote --command="SELECT COUNT(*) as cnt FROM data_records;"
 ```
 
 ---
