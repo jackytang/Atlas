@@ -340,11 +340,28 @@ cd Atlas
 pnpm install
 
 # 初始化数据库（含 v4.2 新增小说搜索源，v4.3 新增数据存储表）
-npx wrangler d1 create atlas-db
-npx wrangler d1 execute atlas-db --file=database/01_schema_core.sql
-npx wrangler d1 execute atlas-db --file=database/02_schema_search.sql
-npx wrangler d1 execute atlas-db --file=database/07_data_search_sources.sql
-npx wrangler d1 execute atlas-db --file=database/11_schema_data_storage.sql
+
+
+# ① 核心 schema（用户、收藏、历史等基础表）
+pnpm --dir backend exec wrangler d1 execute atlas-db --local --file=../database/01_schema_core.sql
+
+# ② 搜索 schema（搜索源、社区、安全、反馈公告、系统错误等）
+pnpm --dir backend exec  wrangler d1 execute atlas-db --remote --file=../database/02_schema_search.sql
+pnpm --dir backend exec  wrangler d1 execute atlas-db --remote --file=../database/03_schema_community.sql
+pnpm --dir backend exec  wrangler d1 execute atlas-db --remote --file=../database/04_schema_security.sql
+pnpm --dir backend exec  wrangler d1 execute atlas-db --remote --file=../database/05_schema_feedback_announcements.sql
+pnpm --dir backend exec  wrangler d1 execute atlas-db --remote --file=../database/10_schema_system_errors.sql
+
+# ③ 数据存储 schema（v4.3 新增，搜索结果异步落库去重）
+pnpm --dir backend exec  wrangler d1 execute atlas-db --remote --file=../database/11_schema_data_storage.sql
+
+# ④ 索引与触发器
+pnpm --dir backend exec  wrangler d1 execute atlas-db --remote --file=../database/09_indexes_triggers.sql
+
+# ⑤ 种子数据（系统配置、搜索源、标签）
+pnpm --dir backend exec  wrangler d1 execute atlas-db --remote --file=../database/06_data_system.sql
+pnpm --dir backend exec  wrangler d1 execute atlas-db --remote --file=../database/07_data_search_sources.sql
+pnpm --dir backend exec  wrangler d1 execute atlas-db --remote --file=../database/08_data_tags.sql
 
 # 本地开发
 pnpm dev
